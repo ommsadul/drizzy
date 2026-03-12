@@ -1,3 +1,4 @@
+import { AuthHeaderAction } from "@/components/AuthHeaderAction";
 import { WaitlistForm } from "@/components/WaitlistForm";
 
 export default function Home() {
@@ -20,12 +21,7 @@ export default function Home() {
             </a>
           </nav>
           <div className="flex items-center gap-3">
-            <a
-              href="#waitlist"
-              className="hidden h-8 items-center justify-center border border-black bg-black px-3 text-[11px] font-semibold tracking-[0.16em] text-white sm:inline-flex"
-            >
-              WAITLIST
-            </a>
+            <AuthHeaderAction />
             <span className="inline-flex h-7 items-center border border-black/10 bg-black/[0.02] px-2 text-[10px] font-mono uppercase tracking-[0.16em] text-black/60">
               v0.1
             </span>

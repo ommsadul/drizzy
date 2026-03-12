@@ -12,6 +12,7 @@ Drizzy is a Next.js app for playlist ranking with a real early-access waitlist f
 ## Features
 
 - Landing page with waitlist CTA
+- Spotify sign-in with protected dashboard route (`/dashboard`)
 - Waitlist API endpoint (`POST /api/waitlist`)
 - Duplicate email protection (unique DB constraint)
 - Confirmation email on successful signup
@@ -45,6 +46,11 @@ Copy-Item .env.example .env
 DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/postgres"
 RESEND_API_KEY="re_..."
 RESEND_FROM_EMAIL="Drizzy <onboarding@resend.dev>"
+NEXTAUTH_URL="http://127.0.0.1:3000"
+AUTH_URL="http://127.0.0.1:3000"
+NEXTAUTH_SECRET="replace-with-a-random-secret"
+SPOTIFY_CLIENT_ID="spotify-client-id"
+SPOTIFY_CLIENT_SECRET="spotify-client-secret"
 APP_URL="http://localhost:3000"
 ```
 
@@ -71,7 +77,36 @@ npm run dev
 - `DATABASE_URL`: Postgres connection string used by Prisma.
 - `RESEND_API_KEY`: Resend API key.
 - `RESEND_FROM_EMAIL`: Sender identity used for waitlist confirmations.
+- `NEXTAUTH_URL`: Base URL for auth callbacks (local: `http://127.0.0.1:3000`).
+- `AUTH_URL`: Auth.js v5 base URL (set this to the same value as `NEXTAUTH_URL`).
+- `NEXTAUTH_SECRET`: Secret for signing auth cookies/JWT.
+- `SPOTIFY_CLIENT_ID`: Spotify app client id.
+- `SPOTIFY_CLIENT_SECRET`: Spotify app client secret.
 - `APP_URL`: URL included in email CTA links.
+
+## Auth Routes
+
+- Sign in: `/api/auth/signin?provider=spotify`
+- Dashboard (protected): `/dashboard`
+- Auth handler: `app/api/auth/[...nextauth]/route.ts`
+
+Spotify app callback URLs:
+
+- Local: `http://127.0.0.1:3000/api/auth/callback/spotify`
+- Production: `https://your-domain.com/api/auth/callback/spotify`
+
+## Playlist Import and Publish
+
+- Import endpoint: `GET /api/playlists/import`
+- Publish/list endpoint: `POST /api/playlists`, `GET /api/playlists`
+- Dashboard UI: `app/dashboard/page.tsx` + `components/PlaylistPublisher.tsx`
+
+Flow:
+
+- Sign in with Spotify.
+- Open `/dashboard` and click "IMPORT SPOTIFY PLAYLISTS".
+- Click "PUBLISH" on selected playlists.
+- Published playlists are stored in Postgres and shown in your dashboard list.
 
 ## Waitlist Architecture
 
