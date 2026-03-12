@@ -25,6 +25,18 @@ type SpotifyPlaylistsResponse = {
   next: string | null;
 };
 
+export class SpotifyApiError extends Error {
+  status: number;
+  details: string;
+
+  constructor(message: string, status: number, details: string) {
+    super(message);
+    this.name = "SpotifyApiError";
+    this.status = status;
+    this.details = details;
+  }
+}
+
 function encodeClientCredentials() {
   const clientId = process.env.SPOTIFY_CLIENT_ID;
   const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
@@ -82,6 +94,21 @@ async function refreshSpotifyAccessToken(account: Account) {
   return updated.access_token;
 }
 
+export async function forceRefreshSpotifyAccessTokenForUser(userId: string) {
+  const account = await prisma.account.findFirst({
+    where: {
+      userId,
+      provider: "spotify",
+    },
+  });
+
+  if (!account) {
+    throw new Error("Spotify account is not connected for this user.");
+  }
+
+  return refreshSpotifyAccessToken(account);
+}
+
 export async function getSpotifyAccessTokenForUser(userId: string) {
   const account = await prisma.account.findFirst({
     where: {
@@ -117,7 +144,12 @@ export async function fetchUserSpotifyPlaylists(accessToken: string) {
     });
 
     if (!response.ok) {
-      throw new Error("Failed to fetch playlists from Spotify.");
+      const details = await response.text();
+      throw new SpotifyApiError(
+        "Failed to fetch playlists from Spotify.",
+        response.status,
+        details
+      );
     }
 
     const page = (await response.json()) as SpotifyPlaylistsResponse;
